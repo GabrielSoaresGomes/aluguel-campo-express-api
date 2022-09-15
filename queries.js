@@ -114,6 +114,55 @@ const logoutUser = (request, response) => {
     response.redirect('/');
 }
 
+const getCampos = (request, response) => {
+    const session = request.session
+    if (session.userid) {
+        pool.query('SELECT * FROM campos ORDER BY id ASC', (error, results) => {
+            if (error) {
+                throw error
+            }
+            response.status(200).json(results.rows)
+        })
+    }else {
+        response.status(405).send("You're not logged in! Send a post to http://localhost/login with your credentials!")
+    }
+}
+
+const alugarCampo = (request, response) => {
+    const session = request.session
+    if (session.userid) {
+        const idCampo = request.params.id
+        const dataInicio = request.body.dataInicio
+        const dataFim = request.body.dataFim
+        if (!dataInicio || !dataFim) {
+            response.status(400).send('You need to send the initial date and the final date!')
+        }
+        if (Date.parse(dataInicio) && Date.parse(dataFim)) {
+            response.status(400).send('The dates not are valids!')
+        }
+        pool.query('UPDATE campos SET alugado = true, alugado_desde=$1, alugado_ate=$2 ' +
+                    'WHERE id = $3', [dataInicio, dataFim, idCampo])
+        response.status(200).send('Successfully leased field!')
+    }else {
+        response.status(405).send("You're not logged in! Send a post to http://localhost/login with your credentials!")
+    }
+}
+
+const getCampoById = (request, response) => {
+    const id = parseInt(request.params.id)
+    session = request.session
+    if (session.userid) {
+        pool.query('SELECT * FROM campos WHERE id = $1', [id], (error, results) => {
+            if (error) {
+                throw error
+            }
+            response.status(200).json(results.rows)
+        })
+    }else {
+        response.status(405).send("You're not logged in! Send a post to http://localhost/login with your credentials!")
+    }
+}
+
 module.exports = {
     getUsers,
     getUserById,
@@ -121,5 +170,8 @@ module.exports = {
     updateUser,
     deleteUser,
     loginUser,
-    logoutUser
+    logoutUser,
+    getCampos,
+    getCampoById,
+    alugarCampo
 }

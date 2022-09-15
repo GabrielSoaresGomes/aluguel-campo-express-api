@@ -33,6 +33,8 @@ app.use(cookieParser())
 //  get
 app.get('/users', db.getUsers)
 app.get('/users/:id', db.getUserById)
+app.get('/campos', db.getCampos)
+app.get('/campos/:id', db.getCampoById)
 app.get('/', (request,  response) => {
     response.json({info: "Hello, this is the home page!"})
 })
@@ -42,6 +44,7 @@ app.post('/login',db.loginUser)
 app.get('/logout', db.logoutUser)
 //  put
 app.put('/users/:id', db.updateUser)
+app.put('/campo/:id/lease', db.alugarCampo)
 //  delete
 app.delete('/users/:id', db.deleteUser)
 
