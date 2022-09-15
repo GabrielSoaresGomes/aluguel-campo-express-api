@@ -1,0 +1,21 @@
+{
+  "name": "projeto-aluguel",
+  "version": "1.0.0",
+  "description": "Um projeto de um desafio proposto, onde o objetivo é aprofundar meu conhecimento nesta tecnologia maravilhosa.",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon ./index.js localhost 3000",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "express": "^4.18.1",
+    "express-session": "^1.17.3",
+    "pg": "^8.8.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.19"
+  }
+}
