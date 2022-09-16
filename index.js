@@ -8,6 +8,8 @@ const sessions = require('express-session');
 //Database queries
 const db = require('./queries')
 
+//Router import
+const apiRouter = require('./routes')
 //Server Config
 const app = express()
 const PORT = 3000
@@ -25,33 +27,15 @@ app.use(sessions({
     cookie: { maxAge: oneDay },
     resave: false
 }))
-var session;
+
 //  Cookie Parser
 app.use(cookieParser())
 
-//Routes
-//  get
-app.get('/users', db.getUsers)
-app.get('/users/:id', db.getUserById)
-app.get('/campos', db.getCampos)
-app.get('/campos/:id', db.getCampoById)
-app.get('/', (request,  response) => {
-    response.json({info: "Hello, this is the home page!"})
-})
-//  post
-app.post('/users', db.createUser)
-app.post('/login',db.loginUser)
-app.get('/logout', db.logoutUser)
-//  put
-app.put('/users/:id', db.updateUser)
-app.put('/campo/:id/lease', db.alugarCampo)
-//  delete
-app.delete('/users/:id', db.deleteUser)
-
+//  Router use
+app.use('/api', apiRouter)
 
 //Server Start
 app.listen(PORT, () => {
-    console.log(`Aplication running in port ${PORT}, link to access: http://localhost:${PORT} `)
+    console.log(`Application running in port ${PORT}, link to access: http://localhost:${PORT} `)
 })
 
-module.exports = session

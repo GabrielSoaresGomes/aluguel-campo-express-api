@@ -1,4 +1,3 @@
-const {request, response} = require("express");
 const Pool = require('pg').Pool
 
 const pool = new Pool ({
@@ -9,7 +8,7 @@ const pool = new Pool ({
     port: 5432
 })
 
-var session = require('./index').session
+var session;
 
 const getUsers = (request, response) => {
     session = request.session
@@ -54,7 +53,6 @@ const createUser = (request, response) => {
     }else {
         response.status(405).send("You're not logged in! Send a post to http://localhost/login with your credentials!")
     }
-
 }
 
 const updateUser = (request, response) => {
@@ -114,10 +112,10 @@ const logoutUser = (request, response) => {
     response.redirect('/');
 }
 
-const getCampos = (request, response) => {
+const getFields = (request, response) => {
     const session = request.session
     if (session.userid) {
-        pool.query('SELECT * FROM campos ORDER BY id ASC', (error, results) => {
+        pool.query('SELECT * FROM fields ORDER BY id ASC', (error, results) => {
             if (error) {
                 throw error
             }
@@ -128,36 +126,53 @@ const getCampos = (request, response) => {
     }
 }
 
-const alugarCampo = (request, response) => {
+const leaseField = (request, response) => {
     const session = request.session
     if (session.userid) {
-        const idCampo = request.params.id
-        const dataInicio = request.body.dataInicio
-        const dataFim = request.body.dataFim
-        if (!dataInicio || !dataFim) {
+        const idField = request.params.id
+        const initialDate = request.body.initialDate
+        const endDate = request.body.endDate
+        if (!initialDate || !endDate) {
             response.status(400).send('You need to send the initial date and the final date!')
         }
-        if (Date.parse(dataInicio) && Date.parse(dataFim)) {
+        if (Date.parse(initialDate) && Date.parse(endDate)) {
             response.status(400).send('The dates not are valids!')
         }
-        pool.query('UPDATE campos SET alugado = true, alugado_desde=$1, alugado_ate=$2 ' +
-                    'WHERE id = $3', [dataInicio, dataFim, idCampo])
+        pool.query('UPDATE fields SET alugado = true, alugado_desde=$1, alugado_ate=$2 ' +
+                    'WHERE id = $3', [initialDate, endDate, idField])
         response.status(200).send('Successfully leased field!')
     }else {
         response.status(405).send("You're not logged in! Send a post to http://localhost/login with your credentials!")
     }
 }
 
-const getCampoById = (request, response) => {
+const getFieldById = (request, response) => {
     const id = parseInt(request.params.id)
     session = request.session
     if (session.userid) {
-        pool.query('SELECT * FROM campos WHERE id = $1', [id], (error, results) => {
+        pool.query('SELECT * FROM fields WHERE id = $1', [id], (error, results) => {
             if (error) {
                 throw error
             }
             response.status(200).json(results.rows)
         })
+    }else {
+        response.status(405).send("You're not logged in! Send a post to http://localhost/login with your credentials!")
+    }
+}
+
+const createField = (request, response) => {
+    const {city, club_name, address, field_size, price_hour, leased, leased_once, leased_until} = request.body
+
+    session = request.session
+    if (session.userid) {
+        pool.query('INSERT INTO fields (city, club_name, address, field_size, price_hour, leased, leased_once, leased_until) VALUES ' +
+            '($1, $2, $3)', [city, club_name, address, field_size, price_hour, leased, leased_once, leased_until], (error, results) => {
+            if (error) {
+                throw error
+            }
+            response.status(201).send(`Field added with ID: ${results.rows[0].id}`)
+        } )
     }else {
         response.status(405).send("You're not logged in! Send a post to http://localhost/login with your credentials!")
     }
@@ -171,7 +186,8 @@ module.exports = {
     deleteUser,
     loginUser,
     logoutUser,
-    getCampos,
-    getCampoById,
-    alugarCampo
+    getFields,
+    getFieldById,
+    leaseField,
+    createField
 }
